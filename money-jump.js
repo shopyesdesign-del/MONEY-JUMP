@@ -1,4 +1,4 @@
-/* MON€Y JUMP – Logo-Button + Minispiel (nur mobile Ansicht, bis 749 px).
+/* MON€Y JUMP – Floating-Widget + Minispiel.
    Einbinden auf der Homepage:
    <script>window.MJ_CONFIG = { shopUrl:'', score1:10000, code1:'JUMP5', label1:'5% Rabatt', score2:25000, code2:'JUMP10', label2:'10% Rabatt' };</script>
    <script src="https://DEIN-NAME.github.io/DEIN-REPO/money-jump.js" defer></script> */
@@ -14,21 +14,34 @@
   display:flex; align-items:center; justify-content:center; cursor:pointer; font:700 22px Arial, sans-serif;
   box-shadow:0 4px 14px rgba(0,0,0,.35); -webkit-tap-highlight-color:transparent; }
 #mj-fab img { width:84%; height:84%; object-fit:contain; display:block; }
+@media (max-width:420px) { #mj-fab { width:56px; height:56px; right:12px; } }
 #mj-fab:focus-visible { outline:3px solid #fff; outline-offset:3px; }
 /* Spiel-Fenster */
 #mj { --black:#0e0e0e; --paper:#f2efe6; --lime:#c6ff00; --mute:#8d8a82;
   position:fixed; inset:0; z-index:2147483000; display:none; align-items:center; justify-content:center;
-  padding:56px 0 16px; background:var(--black); color:var(--paper); font-family:'Archivo', Arial, sans-serif;
-  line-height:1.3; overflow:auto; }
+  padding:12px; background:rgba(14,14,14,.76); color:var(--paper); font-family:'Archivo', Arial, sans-serif;
+  line-height:1.3; overflow:auto; backdrop-filter:blur(5px); }
 #mj.open { display:flex; }
 #mj *, #mj *::before, #mj *::after { box-sizing:border-box; }
-#mj #mj-close { position:absolute; top:calc(8px + env(safe-area-inset-top, 0px)); right:12px; width:44px; height:44px;
+#mj #mj-panel { position:relative; display:flex; align-items:center; justify-content:center;
+  width:min(94vw, 430px); height:min(700px, calc(100vh - 24px)); height:min(700px, calc(100dvh - 24px));
+  padding:56px 12px 12px; border:3px solid var(--lime); background:var(--black);
+  box-shadow:0 24px 80px rgba(0,0,0,.55); }
+#mj #mj-close { position:absolute; top:8px; right:8px; width:44px; height:44px;
   border:3px solid var(--paper); background:var(--black); color:var(--paper); font:700 20px Arial, sans-serif;
   cursor:pointer; border-radius:0; padding:0; }
 #mj #mj-close:focus-visible { outline:3px solid var(--lime); outline-offset:2px; }
 #mj h1, #mj h2 { letter-spacing:normal; font-weight:400; }
-@media (min-width: 750px) { #mj-fab, #mj { display:none !important; } }
-#mj #mj-wrap { position:relative; width:min(94vw, 400px); aspect-ratio:2/3; max-height:96vh; }
+#mj #mj-wrap { position:relative; width:min(100%, 400px); aspect-ratio:2/3; max-height:100%; }
+@media (max-height:720px) { #mj #mj-panel { width:min(94vw, 320px); } }
+@media (min-width:750px) {
+  #mj-fab { display:none !important; }
+  #mj { align-items:flex-end; justify-content:flex-end; padding:24px; }
+  #mj #mj-panel { width:min(420px, calc(100vw - 48px)); height:min(700px, calc(100vh - 48px)); height:min(700px, calc(100dvh - 48px)); }
+}
+@media (min-width:750px) and (max-height:720px) {
+  #mj #mj-panel { width:min(320px, calc(100vw - 48px)); }
+}
 #mj canvas { width:100%; height:100%; display:block; background:#fff;
            border:4px solid var(--paper); touch-action:none; }
 #mj #mj-overlay { position:absolute; inset:4px; background:rgba(14,14,14,.93); display:flex; flex-direction:column;
@@ -63,11 +76,12 @@
 #mj #mj-coupon a { font-family:'Archivo Black', Impact, sans-serif; text-transform:uppercase; text-decoration:none;
               border:3px solid var(--lime); background:var(--lime); color:var(--black); }
 #mj .hidden { display:none !important; }`;
-  var HTML = `<button id="mj-fab" type="button" aria-label="Spiel starten"></button>
-<div id="mj" role="dialog" aria-modal="true" aria-label="MON€Y JUMP">
-  <button id="mj-close" type="button" aria-label="Spiel schließen">✕</button>
-<div id="mj-wrap">
-  <canvas id="mj-c" width="400" height="600"></canvas>
+  var HTML = `<button id="mj-fab" type="button" aria-label="MON€Y JUMP Spiel starten" aria-haspopup="dialog" aria-controls="mj"></button>
+<div id="mj" role="dialog" aria-modal="true" aria-label="MON€Y JUMP Spiel">
+  <div id="mj-panel">
+    <button id="mj-close" type="button" aria-label="Spiel schließen">×</button>
+    <div id="mj-wrap">
+      <canvas id="mj-c" width="400" height="600" tabindex="0" aria-label="MON€Y JUMP Spielbereich. Steuerung mit Pfeiltasten, A und D oder durch Tippen links und rechts.">Dein Browser unterstützt das Spiel-Canvas nicht.</canvas>
   <div id="mj-overlay">
     <h1 id="mj-title">MON€Y<br>JUMP</h1>
     <p id="mj-msg">Steuern mit ← → oder A / D.<br>Am Handy: links / rechts tippen.<br>Sammle Geldbündel für Powerups.</p>
@@ -81,8 +95,8 @@
     <button id="mj-start">Los geht's</button>
     <h2>Rangliste</h2>
     <ol id="mj-board"></ol>
+    </div>
   </div>
-</div>
 </div>`;
 
   function mount() {
@@ -96,9 +110,8 @@
   }
 
   function run() {
-  var mq = window.matchMedia('(max-width: 749px)');
   var fab = document.getElementById('mj-fab'), modal = document.getElementById('mj'), closeBtn = document.getElementById('mj-close');
-  var stop = null, inited = false;
+  var stop = null, inited = false, returnFocus = fab;
 
   // Logo auf den Button setzen
   function arrow() { fab.textContent = '\u25B6'; }
@@ -297,9 +310,14 @@
       running = false; lastScore = score;
       addScore(playerName, score);
       if (!nameIn.value.trim()) nameIn.value = playerName;
-      title.innerHTML = wonNow ? 'Geschafft' : 'Gestürzt';
-      msg.innerHTML = playerName + ': <b style="color:#f2efe6">' + score + '</b> Punkte' +
-        (tier + 1 < TIERS.length ? '<br>Noch ' + (TIERS[tier + 1].score - score) + ' bis zum ' + TIERS[tier + 1].label + '-Gutschein' : '');
+      title.textContent = wonNow ? 'Geschafft' : 'Gestürzt';
+      const points = document.createElement('b');
+      points.style.color = '#f2efe6';
+      points.textContent = String(score);
+      msg.replaceChildren(document.createTextNode(playerName + ': '), points, document.createTextNode(' Punkte'));
+      if (tier + 1 < TIERS.length) {
+        msg.append(document.createElement('br'), document.createTextNode('Noch ' + (TIERS[tier + 1].score - score) + ' bis zum ' + TIERS[tier + 1].label + '-Gutschein'));
+      }
       showCoupon();
       startBtn.textContent = 'Nochmal';
       renderBoard(); overlay.classList.remove('hidden'); startBtn.focus();
@@ -316,7 +334,7 @@
     };
     startBtn.onclick = start;
     nameIn.addEventListener('input', renderBoard);
-    nameIn.addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
+    nameIn.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) start(); });
     addEventListener('keydown', e => {
       if (!running) return;
       keys[e.key] = true; if (e.key.startsWith('Arrow')) e.preventDefault();
@@ -340,17 +358,30 @@
       renderBoard(); overlay.classList.remove('hidden');
     };
   }
-  function open() {
-    if (!mq.matches) return;
+  function open(event) {
+    if (event && event.currentTarget) returnFocus = event.currentTarget;
     init(); modal.classList.add('open'); document.documentElement.style.overflow = 'hidden'; closeBtn.focus();
   }
   function close() {
     if (stop) stop();
-    modal.classList.remove('open'); document.documentElement.style.overflow = ''; fab.focus();
+    modal.classList.remove('open'); document.documentElement.style.overflow = '';
+    if (returnFocus && document.contains(returnFocus)) returnFocus.focus(); else fab.focus();
+    returnFocus = fab;
   }
   fab.addEventListener('click', open);
+  document.querySelectorAll('[data-mj-open]').forEach(function (trigger) { trigger.addEventListener('click', open); });
   closeBtn.addEventListener('click', close);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (!modal.classList.contains('open')) return;
+    if (e.key === 'Escape') { close(); return; }
+    if (e.key !== 'Tab') return;
+    var focusable = Array.from(modal.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), canvas[tabindex]'))
+      .filter(function (el) { return el.getClientRects().length > 0; });
+    if (!focusable.length) { e.preventDefault(); return; }
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();

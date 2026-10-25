@@ -1,12 +1,252 @@
-<!DOCTYPE html>
-<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MON€Y JUMP – Testseite</title>
-<style>body{margin:0;padding:40px 24px;background:#0e0e0e;color:#f2efe6;font-family:Arial,sans-serif}</style></head>
-<body>
-<h1>Testseite</h1>
-<p>Öffne diese Seite am Handy (oder verkleinere das Browserfenster unter 750 px). Unten rechts erscheint der Logo-Button.</p>
-<script>
-  window.MJ_CONFIG = { shopUrl: '', score1: 10000, code1: 'JUMP5', label1: '5% Rabatt', score2: 25000, code2: 'JUMP10', label2: '10% Rabatt' };
-</script>
-<script src="money-jump.js" defer></script>
-</body></html>
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0e0e0e">
+    <meta name="description" content="MON€Y JUMP ist bald am Start. Spiel eine Runde und sichere dir Punkte für deinen nächsten Drop.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>MON€Y JUMP — Passwortgeschützter Drop</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --black: #0e0e0e;
+        --paper: #f2efe6;
+        --lime: #c6ff00;
+        --muted: #a29f95;
+        --line: rgba(242, 239, 230, .17);
+      }
+
+      * { box-sizing: border-box; }
+      html { min-width: 320px; background: var(--black); }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background: var(--black);
+        color: var(--paper);
+        font-family: Archivo, Arial, sans-serif;
+      }
+      body::before {
+        position: fixed;
+        z-index: 0;
+        inset: 0;
+        background:
+          radial-gradient(ellipse at 80% 34%, rgba(198, 255, 0, .09), transparent 36%),
+          linear-gradient(rgba(242, 239, 230, .025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(242, 239, 230, .025) 1px, transparent 1px);
+        background-size: auto, 72px 72px, 72px 72px;
+        content: "";
+        pointer-events: none;
+      }
+      button { font: inherit; }
+      .page-shell {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        width: min(1160px, calc(100% - 64px));
+        min-height: 100vh;
+        min-height: 100svh;
+        margin-inline: auto;
+        flex-direction: column;
+      }
+      .site-header, .site-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .site-header { min-height: 96px; border-bottom: 1px solid var(--line); }
+      .brand { display: inline-flex; align-items: center; gap: 14px; color: var(--paper); text-decoration: none; }
+      .brand img { display: block; width: 64px; height: 52px; object-fit: contain; }
+      .brand-name {
+        font-family: "Archivo Black", Impact, sans-serif;
+        font-size: .92rem;
+        line-height: .95;
+        letter-spacing: -.04em;
+      }
+      .header-status, .eyebrow, .card-kicker, .reward-label, .site-footer {
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+      }
+      .header-status { display: flex; align-items: center; gap: 10px; color: var(--muted); }
+      .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 14px rgba(198, 255, 0, .65); }
+      .hero {
+        display: grid;
+        flex: 1;
+        grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
+        align-items: center;
+        gap: clamp(40px, 7vw, 104px);
+        padding: 64px 0 76px;
+      }
+      .hero-copy { max-width: 660px; min-width: 0; }
+      .eyebrow { display: flex; align-items: center; gap: 10px; margin: 0 0 24px; color: var(--lime); }
+      .eyebrow::before { width: 25px; height: 2px; background: currentColor; content: ""; }
+      h1, h2, p { margin-top: 0; }
+      h1 {
+        margin-bottom: 24px;
+        font-family: "Archivo Black", Impact, sans-serif;
+        font-size: clamp(4rem, 8.5vw, 7.6rem);
+        line-height: .84;
+        letter-spacing: -.075em;
+        text-transform: uppercase;
+      }
+      h1 span { color: var(--lime); }
+      .intro { max-width: 480px; margin-bottom: 30px; color: #c9c6bd; font-size: clamp(1rem, 1.3vw, 1.12rem); line-height: 1.65; }
+      .primary-button {
+        display: inline-flex;
+        min-height: 56px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 32px;
+        padding: 0 18px 0 22px;
+        border: 0;
+        background: var(--lime);
+        color: var(--black);
+        cursor: pointer;
+        font-family: "Archivo Black", Impact, sans-serif;
+        font-size: .92rem;
+        text-transform: uppercase;
+        transition: background-color .18s ease, transform .18s ease;
+      }
+      .primary-button:hover { transform: translateY(-2px); background: var(--paper); }
+      .primary-button:focus-visible { outline: 3px solid var(--paper); outline-offset: 4px; }
+      .button-mark { display: grid; width: 26px; height: 26px; place-items: center; border: 1px solid rgba(14, 14, 14, .4); font-size: 1rem; }
+      .reward-note { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 28px; color: var(--muted); font-size: .78rem; }
+      .reward-note strong { color: var(--paper); font-weight: 700; }
+      .game-card {
+        position: relative;
+        overflow: hidden;
+        max-width: 440px;
+        min-width: 0;
+        padding: 22px;
+        border: 1px solid var(--line);
+        background: linear-gradient(145deg, rgba(242, 239, 230, .055), rgba(242, 239, 230, .015));
+      }
+      .card-kicker { display: flex; align-items: center; justify-content: space-between; color: var(--muted); letter-spacing: .12em; }
+      .card-state { padding: 5px 8px; border: 1px solid rgba(198, 255, 0, .45); color: var(--lime); font-size: .62rem; }
+      .card-art {
+        position: relative;
+        display: grid;
+        min-height: 220px;
+        margin: 20px 0 22px;
+        overflow: hidden;
+        place-items: center;
+        border: 1px solid rgba(198, 255, 0, .35);
+        background: var(--black);
+        color: var(--lime);
+      }
+      .card-art::before, .card-art::after {
+        position: absolute;
+        width: 230px;
+        height: 230px;
+        border: 1px solid rgba(198, 255, 0, .26);
+        border-radius: 50%;
+        content: "";
+      }
+      .card-art::after { width: 160px; height: 160px; }
+      .card-art-logo { position: relative; z-index: 1; width: 76%; height: 136px; object-fit: contain; }
+      .card-copy h2 {
+        margin-bottom: 9px;
+        font-family: "Archivo Black", Impact, sans-serif;
+        font-size: 1.2rem;
+        line-height: 1.1;
+        text-transform: uppercase;
+      }
+      .card-copy p { margin-bottom: 18px; color: var(--muted); font-size: .85rem; line-height: 1.5; }
+      .reward-list { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); }
+      .reward-item { display: flex; flex-direction: column; gap: 5px; padding: 15px 10px 0 0; }
+      .reward-item + .reward-item { padding-left: 14px; border-left: 1px solid var(--line); }
+      .reward-label { color: var(--muted); font-size: .61rem; letter-spacing: .1em; }
+      .reward-value { color: var(--lime); font-family: "Archivo Black", Impact, sans-serif; font-size: 1rem; text-transform: uppercase; }
+      .site-footer { min-height: 64px; gap: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: .62rem; letter-spacing: .11em; }
+      .site-footer p { margin: 0; }
+
+      @media (min-width: 761px) and (max-height: 700px) {
+        .site-header { min-height: 72px; }
+        .hero { gap: 40px; padding: 26px 0 32px; }
+        .eyebrow { margin-bottom: 16px; }
+        h1 { margin-bottom: 18px; font-size: clamp(3.5rem, 7vw, 5.6rem); }
+        .intro { margin-bottom: 20px; font-size: 1rem; line-height: 1.5; }
+        .reward-note { margin-top: 18px; }
+        .game-card { padding: 18px; }
+        .card-art { min-height: 150px; margin: 14px 0 16px; }
+        .card-art-logo { height: 112px; }
+        .card-copy h2 { font-size: 1.08rem; }
+        .card-copy p { margin-bottom: 12px; font-size: .8rem; line-height: 1.4; }
+        .reward-item { padding-top: 10px; }
+        .site-footer { min-height: 52px; }
+      }
+
+      @media (max-width: 760px) {
+        .page-shell { width: min(100% - 40px, 540px); }
+        .site-header { min-height: 78px; }
+        .brand img { width: 52px; height: 42px; }
+        .brand { gap: 10px; }
+        .header-status { gap: 8px; font-size: .6rem; letter-spacing: .08em; }
+        .hero { grid-template-columns: minmax(0, 1fr); gap: 38px; padding: 52px 0 42px; }
+        h1 { font-size: clamp(2.85rem, 12.8vw, 5.2rem); }
+        .game-card { width: 100%; max-width: none; }
+        .site-footer { align-items: flex-start; flex-direction: column; justify-content: center; gap: 8px; padding: 16px 0; }
+      }
+      @media (max-width: 420px) {
+        .page-shell { width: calc(100% - 32px); }
+        .brand-name { font-size: .8rem; }
+        .header-status { max-width: 128px; line-height: 1.4; text-align: right; }
+        .game-card { padding: 16px; }
+        .card-art { min-height: 188px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="#start" aria-label="MON€Y JUMP Startseite">
+          <img src="logo.png" alt="">
+          <span class="brand-name">MON€Y<br>JUMP</span>
+        </a>
+        <div class="header-status"><span class="status-dot" aria-hidden="true"></span><span>Shop passwortgeschützt</span></div>
+      </header>
+
+      <main class="hero" id="start">
+        <section class="hero-copy" aria-labelledby="page-title">
+          <p class="eyebrow">Der nächste Drop wartet</p>
+          <h1 id="page-title">Nicht nur<br><span>zuschauen.</span></h1>
+          <p class="intro">Unser Shop ist noch hinter verschlossenen Türen. Bis es so weit ist: Spring dich im MON€Y JUMP Minigame an die Spitze und sichere dir Punkte für deinen nächsten Drop.</p>
+          <button class="primary-button" type="button" data-mj-open aria-haspopup="dialog" aria-controls="mj">
+            <span>Spiel starten</span><span class="button-mark" aria-hidden="true">↗</span>
+          </button>
+          <div class="reward-note"><span><strong>10.000 Punkte</strong> · 5% Rabatt</span><span><strong>25.000 Punkte</strong> · 10% Rabatt</span></div>
+        </section>
+
+        <aside class="game-card" aria-label="MON€Y JUMP Spiel und Belohnungen">
+          <div class="card-kicker"><span>01 / Arcade Mode</span><span class="card-state">Jetzt spielbar</span></div>
+          <div class="card-art" aria-hidden="true"><img class="card-art-logo" src="logo.png" alt=""></div>
+          <div class="card-copy">
+            <h2>Ein Sprung trennt dich vom nächsten Rabatt.</h2>
+            <p>Weiche aus, sammle Cash und knacke deinen Highscore. Starte deine nächste Runde direkt über den Button auf dieser Seite.</p>
+            <div class="reward-list" aria-label="Rabattziele">
+              <div class="reward-item"><span class="reward-label">Ab 10.000 Punkten</span><span class="reward-value">5% Rabatt</span></div>
+              <div class="reward-item"><span class="reward-label">Ab 25.000 Punkten</span><span class="reward-value">10% Rabatt</span></div>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="site-footer">
+        <p>MON€Y JUMP · Der Drop kommt.</p>
+        <p>Bis dahin: spielen, punkten, wiederholen.</p>
+      </footer>
+    </div>
+
+    <script>
+      window.MJ_CONFIG = { shopUrl: '', score1: 10000, code1: 'JUMP5', label1: '5% Rabatt', score2: 25000, code2: 'JUMP10', label2: '10% Rabatt' };
+    </script>
+    <script src="money-jump.js" defer></script>
+  </body>
+</html>
